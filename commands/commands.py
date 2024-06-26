@@ -1,6 +1,6 @@
 import requests
 
-from commands.methods import getRank, getMmr, getRatingFromPosition
+from commands.methods import getRank, getMmr, getRatingFromPosition, isAllNumbersInRoles, convertStrRoletToIntRole
 from messages.messages import message, setLanguage, current_language
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -21,6 +21,11 @@ dotaId_set = 'dotaId.set'
 dotaId_help = 'dotaId.help'
 getInfo_not_found_exception = 'getInfo.notFoundException'
 getInfo_message = 'getInfo.message'
+setRoles_no_argument_exception='setRoles.noArgumentException'
+setRoles_not_found_Exception='setRoles.notFoundException'
+setRoles_no_correct_Exception='setRoles.noCorrectException'
+setRoles_set='setRoles.set'
+setRoles_help='setRoles.help'
 
 users = {}
 
@@ -77,7 +82,7 @@ async def setDotaId(update: Update, context: CallbackContext) -> None:
                     'avatar': data['profile']['avatarmedium'],
                     'rank': getRank(rank_tier, leaderboard_rank),
                     'mmr': mmr,
-                    'position': []
+                    'positions': []
                 }
                 await update.message.reply_text(message(dotaId_set, 'dotaId', player_id))
             else:
@@ -91,6 +96,7 @@ async def setDotaId(update: Update, context: CallbackContext) -> None:
 async def getInfo(update: Update, context: CallbackContext) -> None:
     user_id = update.message.from_user.id
     chat_id = update.message.chat_id
+
     if user_id in users:
         user = users[user_id]
         await context.bot.send_photo(chat_id=chat_id,
@@ -98,6 +104,30 @@ async def getInfo(update: Update, context: CallbackContext) -> None:
                                      caption=message(getInfo_message, 'getInfo',
                                                      user['name'], user['rank'],
                                                      user['mmr'],
-                                                     user['position']))
+                                                     user['positions']))
     else:
         await update.message.reply_text(message(dotaId_not_found_exception, 'getInfo', user_id))
+
+
+async def setPriorityRole(update: Update, context: CallbackContext) -> None:
+    user_id = update.message.from_user.id
+    if user_id in users:
+        try:
+            if context.args[0] == 'help':
+                await update.message.reply_text(message(setRoles_help, 'setRoles'))
+                return
+
+            args = convertStrRoletToIntRole(context.args)
+            if not isAllNumbersInRoles(args):
+                await update.message.reply_text(message(setRoles_no_correct_Exception, 'setRoles'))
+                return
+
+            positions = ', '.join(map(str, args))
+            users[user_id]['positions'] = positions
+            await update.message.reply_text(message(setRoles_set, 'setRoles', positions))
+        except IndexError:
+            await update.message.reply_text(message(setRoles_no_argument_exception, 'setRoles'))
+
+    else:
+        await update.message.reply_text(message(setRoles_not_found_Exception, 'setRoles', user_id))
+
