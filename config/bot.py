@@ -8,3 +8,4 @@ application = Application.builder().token('6861190199:AAGwpAT3dBRaXAgZDV-MpkxIEM
 application.add_handler(CommandHandler("start", commands.start))
 application.add_handler(CommandHandler('language', commands.language))
 application.add_handler(CommandHandler("help", commands.help))
+application.add_handler(CommandHandler('setDotaId', commands.setDotaId))
