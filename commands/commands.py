@@ -1,5 +1,6 @@
 import requests
 
+from commands.methods import getRank, getMmr, getRatingFromPosition
 from messages.messages import message, setLanguage, current_language
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -18,10 +19,10 @@ dotaId_not_found_exception = 'dotaId.noFoundException'
 dotaId_warning = 'dotaId.warning'
 dotaId_set = 'dotaId.set'
 dotaId_help = 'dotaId.help'
+getInfo_not_found_exception = 'getInfo.notFoundException'
+getInfo_message = 'getInfo.message'
 
-users = {
-
-}
+users = {}
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -66,7 +67,18 @@ async def setDotaId(update: Update, context: CallbackContext) -> None:
 
         if response.status_code == 200:
             if not (user_id in users):
-                users[user_id] = {'dotaId': int(player_id)}
+                data = response.json()
+                rank_tier = int(data['rank_tier'])
+                leaderboard_rank = int(data['leaderboard_rank']) if data['leaderboard_rank'] is not None else 0
+                mmr = getMmr(rank_tier) if rank_tier < 80 else getRatingFromPosition(leaderboard_rank)
+                users[user_id] = {
+                    'account_id': int(player_id),
+                    'name': data['profile']['personaname'],
+                    'avatar': data['profile']['avatarmedium'],
+                    'rank': getRank(rank_tier, leaderboard_rank),
+                    'mmr': mmr,
+                    'position': []
+                }
                 await update.message.reply_text(message(dotaId_set, 'dotaId', player_id))
             else:
                 await update.message.reply_text(message(dotaId_warning, 'dotaId'))
@@ -74,3 +86,18 @@ async def setDotaId(update: Update, context: CallbackContext) -> None:
             await update.message.reply_text(message(dotaId_not_found_exception, 'dotaId', player_id))
     except IndexError:
         await update.message.reply_text(message(dotaId_no_argument_exception, 'dotaId'))
+
+
+async def getInfo(update: Update, context: CallbackContext) -> None:
+    user_id = update.message.from_user.id
+    chat_id = update.message.chat_id
+    if user_id in users:
+        user = users[user_id]
+        await context.bot.send_photo(chat_id=chat_id,
+                                     photo=user['avatar'],
+                                     caption=message(getInfo_message, 'getInfo',
+                                                     user['name'], user['rank'],
+                                                     user['mmr'],
+                                                     user['position']))
+    else:
+        await update.message.reply_text(message(dotaId_not_found_exception, 'getInfo', user_id))
