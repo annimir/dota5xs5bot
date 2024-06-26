@@ -10,25 +10,25 @@ divine = 'rank.divine'
 titan = 'rank.titan'
 
 
-def getRank(rank_tier: int, leaderboard_rank: int) -> str:
+def getRank(language: str, rank_tier: int, leaderboard_rank: int) -> str:
     if rank_tier // 10 == 1:
-        return message(herald, 'rank', rank_tier % 10)
+        return message(language, herald, 'rank', rank_tier % 10)
     elif rank_tier // 10 == 2:
-        return message(guardian, 'rank', rank_tier % 10)
+        return message(language, guardian, 'rank', rank_tier % 10)
     elif rank_tier // 10 == 3:
-        return message(crusader, 'rank', rank_tier % 10)
+        return message(language, crusader, 'rank', rank_tier % 10)
     elif rank_tier // 10 == 4:
-        return message(archon, 'rank', rank_tier % 10)
+        return message(language, archon, 'rank', rank_tier % 10)
     elif rank_tier // 10 == 5:
-        return message(legend, 'rank', rank_tier % 10)
+        return message(language, legend, 'rank', rank_tier % 10)
     elif rank_tier // 10 == 6:
-        return message(ancient, 'rank', rank_tier % 10)
+        return message(language, ancient, 'rank', rank_tier % 10)
     elif rank_tier // 10 == 7:
-        return message(divine, 'rank', rank_tier % 10)
+        return message(language, divine, 'rank', rank_tier % 10)
     elif leaderboard_rank != 0:
-        return message(titan, 'rank', leaderboard_rank)
+        return message(language, titan, 'rank', leaderboard_rank)
     else:
-        return message(titan, 'rank', '')
+        return message(language, titan, 'rank', '')
 
 
 def getMmr(rank_tier: int) -> int:
