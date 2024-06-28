@@ -60,3 +60,7 @@ legend = 'rank.legend'
 ancient = 'rank.ancient'
 divine = 'rank.divine'
 titan = 'rank.titan'
+
+# GameInfo
+gameInfo_player = 'gameInfo.player'
+gameInfo_team = 'gameInfo.team'

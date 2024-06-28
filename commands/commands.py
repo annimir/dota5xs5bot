@@ -1,7 +1,8 @@
 import asyncio
 import requests
 
-from commands.methods import getRank, getMmr, getRatingFromPosition, isAllNumbersInRoles, convertStrRoletToIntRole
+from commands.methods import getRank, getMmr, getRatingFromPosition, isAllNumbersInRoles, convertStrRoletToIntRole, \
+    balance_teams
 from messages.messagePath import start_message, help_message, language_no_argument_exception, language_warning, \
     language_set, language_no_correct_exception, dotaId_help, dotaId_no_correct_exception, dotaId_set, dotaId_warning, \
     dotaId_not_found_exception, dotaId_no_argument_exception, getInfo_message, setRoles_not_found_Exception, \
@@ -9,7 +10,7 @@ from messages.messagePath import start_message, help_message, language_no_argume
     createMatch_no_found_exception, createMatch_warning, createMatch_create, createMatch_send_Notification, \
     accept_no_createMatch_exception, accept_no_found_exception, accept_warning, accept_message, \
     accept_send_notification, createMatch_start, decline_message, decline_no_accept_exception, \
-    decline_no_found_exception, decline_no_createMatch_exception
+    decline_no_found_exception, decline_no_createMatch_exception, gameInfo_player, gameInfo_team
 from messages.messages import message, default_language
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -216,15 +217,33 @@ async def accept(update: Update, context: CallbackContext) -> None:
 
         # Здесь необходимо добавить расперделение по двум командам так,
         # чтобы средний рейтинг каждой был сбалансированный, а также учитывал приоритетные позиции
+        team1, team2 = balance_teams(list(match_state["accepted_users"].values()))
 
         for user_chat_id in user_chat_ids:
             await context.bot.send_message(chat_id=user_chat_id, text=message(
                 users_language[user_chat_id], createMatch_start, 'createMatch'))
 
+        await notify_teams(context, team1, team2)
+
         match_state["task"].cancel()
         match_state['author'] = None
         match_state["match_created"] = False
         match_state["accepted_users"] = dict()
+
+
+async def notify_teams(context, team1, team2):
+    for user_chat_id in user_chat_ids:
+        team1_str = "\n".join(
+            [message(users_language[user_chat_id], gameInfo_player, 'gameInfo', user['name'], user['positions'],
+                     user['mmr']) for user in team1])
+        team2_str = "\n".join(
+            [message(users_language[user_chat_id], gameInfo_player, "gameInfo", user['name'], user['positions'],
+                     user['mmr']) for user in team2])
+
+        text = message(users_language[user_chat_id], gameInfo_team, 'gameInfo', team1_str, team2_str,
+                       match_state['author'])
+
+        await context.bot.send_message(chat_id=user_chat_id, text=text)
 
 
 async def decline(update: Update, context: CallbackContext) -> None:
