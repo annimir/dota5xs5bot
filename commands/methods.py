@@ -1,14 +1,5 @@
+from messages.messagePath import herald, guardian, crusader, archon, legend, ancient, divine, titan
 from messages.messages import message
-
-herald = 'rank.herald'
-guardian = 'rank.guardian'
-crusader = 'rank.crusader'
-archon = 'rank.archon'
-legend = 'rank.legend'
-ancient = 'rank.ancient'
-divine = 'rank.divine'
-titan = 'rank.titan'
-
 
 def getRank(language: str, rank_tier: int, leaderboard_rank: int) -> str:
     if rank_tier // 10 == 1:

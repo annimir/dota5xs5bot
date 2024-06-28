@@ -1,50 +1,20 @@
 import asyncio
-import threading
-
 import requests
 
 from commands.methods import getRank, getMmr, getRatingFromPosition, isAllNumbersInRoles, convertStrRoletToIntRole
+from messages.messagePath import start_message, help_message, language_no_argument_exception, language_warning, \
+    language_set, language_no_correct_exception, dotaId_help, dotaId_no_correct_exception, dotaId_set, dotaId_warning, \
+    dotaId_not_found_exception, dotaId_no_argument_exception, getInfo_message, setRoles_not_found_Exception, \
+    setRoles_help, setRoles_no_correct_Exception, setRoles_set, setRoles_no_argument_exception, createMatch_timeout, \
+    createMatch_no_found_exception, createMatch_warning, createMatch_create, createMatch_send_Notification, \
+    accept_no_createMatch_exception, accept_no_found_exception, accept_warning, accept_message, \
+    accept_send_notification, createMatch_start, decline_message, decline_no_accept_exception, \
+    decline_no_found_exception, decline_no_createMatch_exception
 from messages.messages import message, default_language
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, ConversationHandler, \
     MessageHandler, CallbackContext, Updater, filters
-
-start_message = 'start.message'
-help_message = 'help.message'
-language_no_argument_exception = 'language.noArgumentException'
-language_no_correct_exception = 'language.noCorrectException'
-language_warning = 'language.warning'
-language_set = 'language.set'
-dotaId_no_argument_exception = 'dotaId.noArgumentException'
-dotaId_no_correct_exception = 'dotaId.noCorrectException'
-dotaId_not_found_exception = 'dotaId.noFoundException'
-dotaId_warning = 'dotaId.warning'
-dotaId_set = 'dotaId.set'
-dotaId_help = 'dotaId.help'
-getInfo_not_found_exception = 'getInfo.notFoundException'
-getInfo_message = 'getInfo.message'
-setRoles_no_argument_exception = 'setRoles.noArgumentException'
-setRoles_not_found_Exception = 'setRoles.notFoundException'
-setRoles_no_correct_Exception = 'setRoles.noCorrectException'
-setRoles_set = 'setRoles.set'
-setRoles_help = 'setRoles.help'
-createMatch_no_found_exception = 'createMatch.noFoundException'
-createMatch_warning = 'createMatch.warning'
-createMatch_create = 'createMatch.create'
-createMatch_send_Notification = 'createMatch.sendNotificationOfMatchCreation'
-createMatch_timeout = 'createMatch.timeout'
-createMatch_start = 'createMatch.start'
-accept_no_createMatch_exception = 'accept.noCreateMatchException'
-accept_no_found_exception = 'accept.noFoundException'
-accept_warning = 'accept.warning'
-accept_message = 'accept.message'
-accept_send_notification = 'accept.sendNotification'
-decline_no_found_exception = 'decline.noCreateMatchException'
-decline = 'decline.noFoundException'
-decline_no_accept_exception = 'decline.noAcceptException'
-decline_message = 'decline.message'
-decline_send_notification = 'decline.sendNotification'
 
 users = {}
 users_language = {}
@@ -262,7 +232,7 @@ async def decline(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
 
     if not match_state['isCreate']:
-        await update.message.reply_text(message(users_language[chat_id], dotaId_no_correct_exception, 'decline'))
+        await update.message.reply_text(message(users_language[chat_id], decline_no_createMatch_exception, 'decline'))
         return
 
     if not (user_id in users):
